@@ -25,19 +25,17 @@ This site is not currently responsive.
 
 ## Launch
 
-[Live site](https://anthonychavis.github.io/mapty/){:target="\_blank"}
+<a href="https://anthonychavis.github.io/mapty/" target="_blank">Live site</a>
 
 ## Sources
 
-This project is based on [The Complete JavaScript Course 2022: From Zero to Expert!, by Jonas Schmedtmann][lesson-site] - section 15.
+This project is based on <a href="https://www.udemy.com/course/the-complete-javascript-course/" target="_blank">The Complete JavaScript Course 2022: From Zero to Expert!, by Jonas Schmedtmann</a> section 15.
 
 ## Contact
 
 [Anthony Chavis][email].
 
 -   Return to the [Table of Contents](#table-of-contents)
-
-<!-- [live-site]: (https://anthonychavis.github.io/mapty/){:target="_blank"} -->
 
 [lesson-site]: https://www.udemy.com/course/the-complete-javascript-course/
 [email]: gitanthony@yahoo.com
