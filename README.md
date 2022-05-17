@@ -25,7 +25,7 @@ This site is not currently responsive.
 
 ## Launch
 
-[Live site][live-site]{:target="\_blank"}
+[Live site][live-site]
 
 ## Sources
 
@@ -37,6 +37,6 @@ This project is based on [The Complete JavaScript Course 2022: From Zero to Expe
 
 -   Return to the [Table of Contents](#table-of-contents)
 
-[live-site]: https://anthonychavis.github.io/mapty/
+[live-site]: https://anthonychavis.github.io/mapty/{:target="_blank"}
 [lesson-site]: https://www.udemy.com/course/the-complete-javascript-course/
 [email]: gitanthony@yahoo.com
