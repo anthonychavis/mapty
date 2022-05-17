@@ -25,7 +25,7 @@ This site is not currently responsive.
 
 ## Launch
 
-[Live site][live-site]
+[Live site][live-site]{:target="\_blank"}
 
 ## Sources
 
