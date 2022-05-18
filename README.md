@@ -7,6 +7,7 @@ Exercise tracker with geolocation.
 -   [Introduction](#introduction)
 -   [Technologies](#technologies)
 -   [Launch](#launch)
+-   [Flowchart]()
 -   [Sources](#sources)
 -   [Contact Me](#contact)
 
@@ -27,6 +28,10 @@ This site is not currently responsive.
 
 [Live site][live-site]
 
+## Flowchart
+
+![Flowchart][flowchart]
+
 ## Sources
 
 This project is based on [The Complete JavaScript Course 2022: From Zero to Expert!, by Jonas Schmedtmann][lesson-site] - section 15.
@@ -38,5 +43,6 @@ This project is based on [The Complete JavaScript Course 2022: From Zero to Expe
 -   Return to the [Table of Contents](#table-of-contents)
 
 [live-site]: https://anthonychavis.github.io/mapty/
+[flowchart]: resources/pngMaptyFlowchart.png
 [lesson-site]: https://www.udemy.com/course/the-complete-javascript-course/
 [email]: gitanthony@yahoo.com
