@@ -26,9 +26,31 @@ if (navigator.geolocation)
             console.log(
                 `https://www.google.com/maps/@${latitude},${longitude}`
             );
+
+            const coords = [latitude, longitude];
+
+            // from Leaflet, then edited
+            var map = L.map('map').setView(coords, 13); // map string = id of element for rendering
+            // L = Leaflet namespace (like Intl) & global variable ♦
+            // 13 = zoom value
+
+            // from Leaflet, then edited (tile src changed)
+            L.tileLayer(
+                'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+                {
+                    attribution:
+                        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                }
+            ).addTo(map); // openstreetmap is an open source map; could use other maps
+
+            // from Leaflet, then edited
+            L.marker(coords)
+                .addTo(map)
+                .bindPopup('A pretty CSS3 popup.<br> Easily customizable.')
+                .openPopup();
         },
         function () {
             alert('Could not get your position');
         }
     );
-// NOTICE 2 callback fxns; 1st nds param - success; 2nd - error
+// NOTICE 2 callback fxns for the getCurrentPosition() method; 1st nds param - success; 2nd - error
