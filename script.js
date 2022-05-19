@@ -11,6 +11,8 @@ const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 
+let map, mapEvent;
+
 if (navigator.geolocation)
     // using the Geolocation API
     navigator.geolocation.getCurrentPosition(
@@ -30,7 +32,7 @@ if (navigator.geolocation)
             const coords = [latitude, longitude];
 
             // from Leaflet, then edited. gives location
-            var map = L.map('map').setView(coords, 13); // map string = id of element for rendering
+            map = L.map('map').setView(coords, 13); // map string = id of element for rendering
             // L = Leaflet namespace (like Intl) & global variable ♦
             // 13 = zoom value
             // console.log(map); checking for methods
@@ -44,25 +46,13 @@ if (navigator.geolocation)
                 }
             ).addTo(map); // openstreetmap is an open source map; could use other maps
 
-            // handler on map var to use coords of click
-            map.on('click', function (mapEvent) {
-                // console.log(mapEvent); // check properties
-                const { lat, lng } = mapEvent.latlng; // destructuring
+            // handler on map var to manage clicks on rendered map - reveal form
+            map.on('click', function (mapE) {
+                mapEvent = mapE;
 
-                // from Leaflet, then edited
-                L.marker([lat, lng])
-                    .addTo(map)
-                    .bindPopup(
-                        L.popup({
-                            maxWidth: 250,
-                            minWidth: 100,
-                            autoClose: false,
-                            closeOnClick: false,
-                            className: 'running-popup', // will be dynamic
-                        })
-                    )
-                    .setPopupContent('Workout') // inherited method
-                    .openPopup(); // Read Leaflet documentation to remember how this chaining works
+                // form
+                form.classList.remove('hidden');
+                inputDistance.focus(); // add cursor
             });
         },
         function () {
@@ -70,3 +60,44 @@ if (navigator.geolocation)
         }
     );
 // NOTICE 2 callback fxns for the getCurrentPosition() method; 1st nds param - success; 2nd - error
+
+// form event handler to submit form & render marker. (unrelated to geolocation. So, built outside the getCurrentPosition() method).
+form.addEventListener('submit', function (e) {
+    e.preventDefault(); // avoid default form behavior
+
+    // clear input fields after submitting
+    inputDistance.value =
+        inputDuration.value =
+        inputCadence.value =
+        inputElevation.value =
+            '';
+
+    // Display marker
+    // console.log(mapEvent); // check properties
+    const { lat, lng } = mapEvent.latlng; // mapEvent var added to global scope b/c defined in a callback fxn of getCurrentPosition()
+
+    // marker + popup rendered on map - from Leaflet, then edited
+    L.marker([lat, lng])
+        .addTo(map) // map var added to global scope b/c it's defined in the getCurrentPosition() method
+        .bindPopup(
+            L.popup({
+                maxWidth: 250,
+                minWidth: 100,
+                autoClose: false,
+                closeOnClick: false,
+                className: 'running-popup', // will be dynamic
+            })
+        )
+        .setPopupContent('Workout') // inherited method
+        .openPopup(); // Read Leaflet documentation to remember how this chaining works
+});
+
+// when exercise type changed in form, swap input fields
+inputType.addEventListener('change', function () {
+    inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
+    inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
+}); // 'change' event is on the 'select' html tag
+
+// hide generic form after submitting
+// save form data
+// add submitted form/data to list
