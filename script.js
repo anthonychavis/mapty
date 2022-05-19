@@ -23,16 +23,17 @@ if (navigator.geolocation)
             const { longitude } = position.coords; // destructuring
 
             // url from google maps
-            console.log(
-                `https://www.google.com/maps/@${latitude},${longitude}`
-            );
+            // console.log(
+            //     `https://www.google.com/maps/@${latitude},${longitude}`
+            // );
 
             const coords = [latitude, longitude];
 
-            // from Leaflet, then edited
+            // from Leaflet, then edited. gives location
             var map = L.map('map').setView(coords, 13); // map string = id of element for rendering
             // L = Leaflet namespace (like Intl) & global variable ♦
             // 13 = zoom value
+            // console.log(map); checking for methods
 
             // from Leaflet, then edited (tile src changed)
             L.tileLayer(
@@ -43,11 +44,26 @@ if (navigator.geolocation)
                 }
             ).addTo(map); // openstreetmap is an open source map; could use other maps
 
-            // from Leaflet, then edited
-            L.marker(coords)
-                .addTo(map)
-                .bindPopup('A pretty CSS3 popup.<br> Easily customizable.')
-                .openPopup();
+            // handler on map var to use coords of click
+            map.on('click', function (mapEvent) {
+                // console.log(mapEvent); // check properties
+                const { lat, lng } = mapEvent.latlng; // destructuring
+
+                // from Leaflet, then edited
+                L.marker([lat, lng])
+                    .addTo(map)
+                    .bindPopup(
+                        L.popup({
+                            maxWidth: 250,
+                            minWidth: 100,
+                            autoClose: false,
+                            closeOnClick: false,
+                            className: 'running-popup', // will be dynamic
+                        })
+                    )
+                    .setPopupContent('Workout') // inherited method
+                    .openPopup(); // Read Leaflet documentation to remember how this chaining works
+            });
         },
         function () {
             alert('Could not get your position');
