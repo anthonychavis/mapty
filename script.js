@@ -13,6 +13,57 @@ const inputElevation = document.querySelector('.form__input--elevation');
 
 // let map, mapEvent;
 
+// parent Class for Workout details
+class Workout {
+    // pulic fields
+    date = new Date();
+    id = (Date.now() + '').slice(-10); // used to identify/find from the array to be added to the Class App. Use a library to create unique id's
+
+    constructor(coords, distance, duration) {
+        this.coords = coords; // [lat, lng]
+        this.distance = distance; // km
+        this.duration = duration; // mins
+    }
+}
+
+// child Classes for Workout details
+class Running extends Workout {
+    constructor(coords, distance, duration, cadence) {
+        super(coords, distance, duration);
+        this.cadence = cadence;
+
+        this.calcPace(); // ok to call any code in constructor
+    }
+
+    calcPace() {
+        // min/km
+        this.pace = this.duration / this.distance;
+        return this.pace;
+    }
+}
+
+class Cycling extends Workout {
+    constructor(coords, distance, duration, elevationGain) {
+        super(coords, distance, duration);
+        this.elevationGain = elevationGain;
+
+        this.calcSpeed();
+    }
+
+    calcSpeed() {
+        // km/h
+        this.speed = this.distance / (this.duration / 60);
+        return this.speed;
+    }
+}
+
+// check Classes work as expected
+// const run1 = new Running([39, -12], 5.2, 24, 178);
+// const cycling1 = new Cycling([39, -12], 27, 95, 523);
+// console.log(run1, cycling1);
+
+/////////////////////////////////////////////////////////
+// APPLICATION ARCHITECTURE
 // parent Class to organize data - each piece of fxnality separated
 class App {
     // Private Fields - aka Private Instance Fields
@@ -30,6 +81,7 @@ class App {
         inputType.addEventListener('change', this._toggleElevationField); // 'change' event is on the 'select' html tag
     } // no params needed b/c nothing passed in; constructor executed as soon as Instance created
 
+    // private methods
     _getPosition() {
         if (navigator.geolocation)
             // using the Geolocation API
