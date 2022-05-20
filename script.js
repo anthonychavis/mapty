@@ -11,92 +11,121 @@ const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 
-let map, mapEvent;
+// let map, mapEvent;
 
-if (navigator.geolocation)
-    // using the Geolocation API
-    navigator.geolocation.getCurrentPosition(
-        function (position) {
-            // console.log(position); // check object
+// parent Class to organize data - each piece of fxnality separated
+class App {
+    // Private Fields - aka Private Instance Fields
+    #map;
+    #mapEvent;
 
-            // take position out
-            // const latitude = position.coords.latitude;
-            const { latitude } = position.coords; // destructuring
-            const { longitude } = position.coords; // destructuring
+    constructor() {
+        this._getPosition();
 
-            // url from google maps
-            // console.log(
-            //     `https://www.google.com/maps/@${latitude},${longitude}`
-            // );
+        // top level handlers:
+        // form event handler to submit form & render marker. (unrelated to geolocation. So, built outside the getCurrentPosition() method).
+        form.addEventListener('submit', this._newWorkout.bind(this)); // bind method returns new fxn
 
-            const coords = [latitude, longitude];
+        // when exercise type changed in form, swap input fields
+        inputType.addEventListener('change', this._toggleElevationField); // 'change' event is on the 'select' html tag
+    } // no params needed b/c nothing passed in; constructor executed as soon as Instance created
 
-            // from Leaflet, then edited. gives location
-            map = L.map('map').setView(coords, 13); // map string = id of element for rendering
-            // L = Leaflet namespace (like Intl) & global variable ♦
-            // 13 = zoom value
-            // console.log(map); checking for methods
-
-            // from Leaflet, then edited (tile src changed)
-            L.tileLayer(
-                'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
-                {
-                    attribution:
-                        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    _getPosition() {
+        if (navigator.geolocation)
+            // using the Geolocation API
+            navigator.geolocation.getCurrentPosition(
+                this._loadMap.bind(this),
+                function () {
+                    alert('Could not get your position');
                 }
-            ).addTo(map); // openstreetmap is an open source map; could use other maps
+            );
+        // NOTICE 2 callback fxns for the getCurrentPosition() method; 1st nds param - success; 2nd - error
+    }
 
-            // handler on map var to manage clicks on rendered map - reveal form
-            map.on('click', function (mapE) {
-                mapEvent = mapE;
+    _loadMap(position) {
+        // console.log(position); // check object
 
-                // form
-                form.classList.remove('hidden');
-                inputDistance.focus(); // add cursor
-            });
-        },
-        function () {
-            alert('Could not get your position');
-        }
-    );
-// NOTICE 2 callback fxns for the getCurrentPosition() method; 1st nds param - success; 2nd - error
+        // take position out
+        // const latitude = position.coords.latitude;
+        const { latitude } = position.coords; // destructuring
+        const { longitude } = position.coords; // destructuring
 
-// form event handler to submit form & render marker. (unrelated to geolocation. So, built outside the getCurrentPosition() method).
-form.addEventListener('submit', function (e) {
-    e.preventDefault(); // avoid default form behavior
+        // url from google maps
+        // console.log(
+        //     `https://www.google.com/maps/@${latitude},${longitude}`
+        // );
 
-    // clear input fields after submitting
-    inputDistance.value =
-        inputDuration.value =
-        inputCadence.value =
-        inputElevation.value =
-            '';
+        const coords = [latitude, longitude];
 
-    // Display marker
-    // console.log(mapEvent); // check properties
-    const { lat, lng } = mapEvent.latlng; // mapEvent var added to global scope b/c defined in a callback fxn of getCurrentPosition()
+        // from Leaflet, then edited. gives location
+        this.#map = L.map('map').setView(coords, 13); // map string = id of element for rendering
+        // L = Leaflet namespace (like Intl) & global variable ♦
+        // 13 = zoom value
+        // console.log(map); checking for methods
 
-    // marker + popup rendered on map - from Leaflet, then edited
-    L.marker([lat, lng])
-        .addTo(map) // map var added to global scope b/c it's defined in the getCurrentPosition() method
-        .bindPopup(
-            L.popup({
-                maxWidth: 250,
-                minWidth: 100,
-                autoClose: false,
-                closeOnClick: false,
-                className: 'running-popup', // will be dynamic
-            })
-        )
-        .setPopupContent('Workout') // inherited method
-        .openPopup(); // Read Leaflet documentation to remember how this chaining works
-});
+        // from Leaflet, then edited (tile src changed)
+        L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+            attribution:
+                '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }).addTo(this.#map); // openstreetmap is an open source map; could use other maps
 
-// when exercise type changed in form, swap input fields
-inputType.addEventListener('change', function () {
-    inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
-    inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
-}); // 'change' event is on the 'select' html tag
+        // handler on map var to manage clicks on rendered map - reveal form
+        this.#map.on('click', this._showForm.bind(this));
+    }
+
+    _showForm(mapE) {
+        this.#mapEvent = mapE;
+
+        // form
+        form.classList.remove('hidden');
+        inputDistance.focus(); // add cursor
+    }
+
+    _toggleElevationField() {
+        inputElevation
+            .closest('.form__row')
+            .classList.toggle('form__row--hidden');
+        inputCadence
+            .closest('.form__row')
+            .classList.toggle('form__row--hidden');
+    }
+
+    _newWorkout(e) {
+        e.preventDefault(); // avoid default form behavior
+        // console.log(this); // shows the this keyword must be bound
+
+        // clear input fields after submitting
+        inputDistance.value =
+            inputDuration.value =
+            inputCadence.value =
+            inputElevation.value =
+                '';
+
+        // Display marker
+        // console.log(mapEvent); // check properties
+        const { lat, lng } = this.#mapEvent.latlng; // mapEvent var added to global scope b/c defined in a callback fxn of getCurrentPosition()
+
+        // marker + popup rendered on map - from Leaflet, then edited
+        L.marker([lat, lng])
+            .addTo(this.#map) // map var added to global scope b/c it's defined in the getCurrentPosition() method
+            .bindPopup(
+                L.popup({
+                    maxWidth: 250,
+                    minWidth: 100,
+                    autoClose: false,
+                    closeOnClick: false,
+                    className: 'running-popup', // will be dynamic
+                })
+            )
+            .setPopupContent('Workout') // inherited method
+            .openPopup(); // Read Leaflet documentation to remember how this chaining works
+    }
+}
+
+// create Instance
+const app = new App(); // created on pg load b/c it's in the top level scope. Constructor executed on Instance creation.
+
+// ♠ NOTE at the moment, if cycling is left as the inputType before pg refresh, the cadence/elevation input field is broken [will cause a problem when storing data] ♠
 
 // hide generic form after submitting
 // save form data
