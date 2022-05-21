@@ -1,18 +1,5 @@
 'use strict';
 
-// prettier-ignore
-const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
-const form = document.querySelector('.form');
-const containerWorkouts = document.querySelector('.workouts');
-const inputType = document.querySelector('.form__input--type');
-const inputDistance = document.querySelector('.form__input--distance');
-const inputDuration = document.querySelector('.form__input--duration');
-const inputCadence = document.querySelector('.form__input--cadence');
-const inputElevation = document.querySelector('.form__input--elevation');
-
-// let map, mapEvent;
-
 // parent Class for Workout details
 class Workout {
     // pulic fields
@@ -28,6 +15,9 @@ class Workout {
 
 // child Classes for Workout details
 class Running extends Workout {
+    // public field
+    type = 'running';
+
     constructor(coords, distance, duration, cadence) {
         super(coords, distance, duration);
         this.cadence = cadence;
@@ -35,6 +25,7 @@ class Running extends Workout {
         this.calcPace(); // ok to call any code in constructor
     }
 
+    // Public interface - Public method
     calcPace() {
         // min/km
         this.pace = this.duration / this.distance;
@@ -43,6 +34,8 @@ class Running extends Workout {
 }
 
 class Cycling extends Workout {
+    // public field
+    type = 'cycling';
     constructor(coords, distance, duration, elevationGain) {
         super(coords, distance, duration);
         this.elevationGain = elevationGain;
@@ -50,6 +43,7 @@ class Cycling extends Workout {
         this.calcSpeed();
     }
 
+    // Public interface - Public method
     calcSpeed() {
         // km/h
         this.speed = this.distance / (this.duration / 60);
@@ -64,11 +58,26 @@ class Cycling extends Workout {
 
 /////////////////////////////////////////////////////////
 // APPLICATION ARCHITECTURE
+// these global vars could go into the Class App as fields
+// prettier-ignore
+const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+const form = document.querySelector('.form');
+const containerWorkouts = document.querySelector('.workouts');
+const inputType = document.querySelector('.form__input--type');
+const inputDistance = document.querySelector('.form__input--distance');
+const inputDuration = document.querySelector('.form__input--duration');
+const inputCadence = document.querySelector('.form__input--cadence');
+const inputElevation = document.querySelector('.form__input--elevation');
+
+// let map, mapEvent;
+
 // parent Class to organize data - each piece of fxnality separated
 class App {
     // Private Fields - aka Private Instance Fields
     #map;
     #mapEvent;
+    #workouts = [];
 
     constructor() {
         this._getPosition();
@@ -142,9 +151,61 @@ class App {
             .classList.toggle('form__row--hidden');
     }
 
+    // create new workout
     _newWorkout(e) {
         e.preventDefault(); // avoid default form behavior
         // console.log(this); // shows the this keyword must be bound
+
+        // helper fxns
+        const validInputs = (...inputs) =>
+            inputs.every(inp => Number.isFinite(inp));
+        const allPositive = (...inputs) => inputs.every(inp => inp > 0);
+
+        // Get data from form
+        const { lat, lng } = this.#mapEvent.latlng;
+        let workout;
+        const type = inputType.value;
+        const distance = +inputDistance.value;
+        const duration = +inputDuration.value;
+
+        // If workout running, create running object
+        if (type === 'running') {
+            const cadence = +inputCadence.value;
+
+            // Check if data valid
+            if (
+                !validInputs(distance, duration, cadence) ||
+                !allPositive(distance, duration, cadence)
+            )
+                return alert('Input has to be positive numbers');
+
+            workout = new Running([lat, lng], distance, duration, cadence);
+        }
+
+        // If workout cycling, create cycling object
+        if (type === 'cycling') {
+            const elevation = +inputElevation.value;
+
+            // Check if data valid
+            if (
+                !validInputs(distance, duration, elevation) ||
+                !allPositive(distance, duration) // elevation could be neg
+            )
+                return alert('Input has to be positive numbers');
+
+            workout = new Cycling([lat, lng], distance, duration, elevation);
+        }
+
+        // Add new object to workout array
+        this.#workouts.push(workout);
+        // console.log(workout); // check the objects created correctly
+
+        // Render workout on map as marker
+        this._rederWorkoutMarker(workout);
+
+        // Render workout on the list
+
+        // Hide form + clear input fields
 
         // clear input fields after submitting
         inputDistance.value =
@@ -152,24 +213,22 @@ class App {
             inputCadence.value =
             inputElevation.value =
                 '';
+    }
 
-        // Display marker
-        // console.log(mapEvent); // check properties
-        const { lat, lng } = this.#mapEvent.latlng; // mapEvent var added to global scope b/c defined in a callback fxn of getCurrentPosition()
-
-        // marker + popup rendered on map - from Leaflet, then edited
-        L.marker([lat, lng])
-            .addTo(this.#map) // map var added to global scope b/c it's defined in the getCurrentPosition() method
+    _rederWorkoutMarker(workout) {
+        // marker + popup rendered on map - from Leaflet
+        L.marker(workout.coords)
+            .addTo(this.#map)
             .bindPopup(
                 L.popup({
                     maxWidth: 250,
                     minWidth: 100,
                     autoClose: false,
                     closeOnClick: false,
-                    className: 'running-popup', // will be dynamic
+                    className: `${workout.type}-popup`,
                 })
             )
-            .setPopupContent('Workout') // inherited method
+            .setPopupContent(workout.type) // inherited method
             .openPopup(); // Read Leaflet documentation to remember how this chaining works
     }
 }
@@ -180,5 +239,4 @@ const app = new App(); // created on pg load b/c it's in the top level scope. Co
 // ♠ NOTE at the moment, if cycling is left as the inputType before pg refresh, the cadence/elevation input field is broken [will cause a problem when storing data] ♠
 
 // hide generic form after submitting
-// save form data
 // add submitted form/data to list
