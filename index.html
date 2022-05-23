@@ -42,6 +42,7 @@
             />
 
             <ul class="workouts">
+                <!-- Shouldn't there have been a li element with the form element (below) nested inside, or have form & ul as siblings? I would've made them siblings to group only the exercise history; this might be better for some users. -->
                 <form class="form hidden">
                     <div class="form__row">
                         <label class="form__label">Type</label>
@@ -81,7 +82,9 @@
                     <button class="form__btn">OK</button>
                 </form>
 
-                <!-- <li class="workout workout--running" data-id="1234567890">
+                <!-- RUNNING -->
+                <!-- 
+                    <li class="workout workout--running" data-id="1234567890">
                     <h2 class="workout__title">Running on April 14</h2>
                     <div class="workout__details">
                         <span class="workout__icon">🏃‍♂️</span>
@@ -104,7 +107,11 @@
                         <span class="workout__unit">spm</span>
                     </div>
                 </li>
-                <li class="workout workout--cycling" data-id="1234567891">
+            -->
+
+                <!-- CYCLING -->
+                <!-- 
+                    <li class="workout workout--cycling" data-id="1234567891">
                     <h2 class="workout__title">Cycling on April 5</h2>
                     <div class="workout__details">
                         <span class="workout__icon">🚴‍♀️</span>
@@ -126,7 +133,8 @@
                         <span class="workout__value">223</span>
                         <span class="workout__unit">m</span>
                     </div>
-                </li> -->
+                </li>
+                -->
             </ul>
 
             <p class="copyright">
