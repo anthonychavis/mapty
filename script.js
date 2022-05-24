@@ -98,10 +98,13 @@ class App {
     #workouts = [];
 
     constructor() {
+        // Get user's position
         this._getPosition();
 
-        // (formerly top level handlers)
-        // form event handler to submit form & render marker. (unrelated to geolocation. So, built outside the getCurrentPosition() method).
+        // Get data from local storage
+        this._getLocalStorage();
+
+        // Attach event handlers
         form.addEventListener('submit', this._newWorkout.bind(this)); // bind method returns new fxn
 
         // when exercise type changed in form, swap input fields
@@ -142,7 +145,7 @@ class App {
 
         const coords = [latitude, longitude];
 
-        // from Leaflet, then edited. gives user location
+        // from Leaflet, then edited. gives user location & sets zoom
         this.#map = L.map('map').setView(coords, this.#mapZoomLevel); // map string = id of element for rendering
         // L = Leaflet namespace (like Intl) & global variable ♦
         // 13 = zoom value
@@ -154,8 +157,13 @@ class App {
                 '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         }).addTo(this.#map); // openstreetmap is an open source map; could use other maps
 
-        // handler on map var to manage clicks on rendered map - reveal form
+        // manage clicks on rendered map - reveal form
         this.#map.on('click', this._showForm.bind(this));
+
+        // render markers of locally stored workouts when map is rendered
+        this.#workouts.forEach(work => {
+            this._renderWorkoutMarker(work);
+        });
     }
 
     _showForm(mapE) {
@@ -234,21 +242,24 @@ class App {
             workout = new Cycling([lat, lng], distance, duration, elevation);
         }
 
-        // Add new object to workout array
+        // Add new object/instance to workout array
         this.#workouts.push(workout);
         // console.log(workout); // check the objects created correctly
 
         // Render workout on map as marker
-        this._rederWorkoutMarker(workout);
+        this._renderWorkoutMarker(workout);
 
         // Render workout on the list
         this._renderWorkout(workout);
 
         // Hide form + clear input fields
         this._hideForm();
+
+        // Set local storage to all workouts
+        this._setLocalStorage(); // called inside the _newWorkout() method b/c we want the Instances stored locally as soon as created
     }
 
-    _rederWorkoutMarker(workout) {
+    _renderWorkoutMarker(workout) {
         // marker + popup rendered on map - from Leaflet
         L.marker(workout.coords)
             .addTo(this.#map)
@@ -269,6 +280,7 @@ class App {
             .openPopup(); // Read Leaflet documentation to remember how this chaining works
     }
 
+    // workout to list
     _renderWorkout(workout) {
         let html = `
             <li class="workout workout--${workout.type}" data-id="${
@@ -289,6 +301,7 @@ class App {
                 </div>
             `; // data attribute used to build a bridge b/t the ui & data in the application
 
+        // running
         if (workout.type === 'running')
             html += `
                 <div class="workout__details">
@@ -306,6 +319,7 @@ class App {
             </li>
             `;
 
+        // cycling
         if (workout.type === 'cycling')
             html += `
                 <div class="workout__details">
@@ -329,7 +343,7 @@ class App {
     _moveToPopup(e) {
         // event (e) used to match the element
         const workoutEl = e.target.closest('.workout');
-        console.log(workoutEl); // this is where the data attribute comes in handy
+        // console.log(workoutEl); // this is where the data attribute comes in handy
 
         // guard clause
         if (!workoutEl) return;
@@ -345,8 +359,31 @@ class App {
         });
 
         // using the public interface
-        workout.click(); // adding only as an example of using the pucblic interface outside of its Class; clicks property on each workout iinstance via inheritance
+        // workout.click(); // adding only as an example of using the pucblic interface outside of its Class; clicks property on each workout iinstance via inheritance. Disabled b/c Instances stored locally no longer have the prototype chain/inheritance when they're pulled from storage - [can be done by recreating the instances using the stored data]
     }
+
+    _setLocalStorage() {
+        localStorage.setItem('workouts', JSON.stringify(this.#workouts));
+    } // 1st argument = key (any name) as a string. 2nd argument = value as a string that we want to store & associate w/ the key. JSON.stringify() converts an object to a string. localStorage = "blocking" API; only use w/ small amts of data to avoid slowing the app
+
+    _getLocalStorage() {
+        const data = JSON.parse(localStorage.getItem('workouts')); // return stringified object to an object w/ JSON.parse().
+        // console.log(data); // NOTICE prototypal inheritance broken
+
+        // guard clause
+        if (!data) return;
+        this.#workouts = data;
+        this.#workouts.forEach(work => {
+            this._renderWorkout(work);
+        }); // this fxn doesn't have to wait on the map rendering. So, it can be called w/ page load (creation of new App Instance)
+    }
+
+    // Public Interface - public method
+    // empty local storage
+    reset() {
+        localStorage.removeItem('workouts'); // empty local storage
+        location.reload(); // programmatically reload the pg. location = big object in the browsers
+    } // can use this public method in the console
 }
 
 // create Instance
