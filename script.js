@@ -5,6 +5,7 @@ class Workout {
     // pulic fields
     date = new Date();
     id = (Date.now() + '').slice(-10); // used to identify/find from the array to be added to the Class App. Use a library to create unique id's
+    clicks = 0; // adding only as an example of using the pucblic interface outside of its Class
 
     constructor(coords, distance, duration) {
         this.coords = coords; // [lat, lng]
@@ -21,6 +22,11 @@ class Workout {
             1
         )} on ${months[this.date.getMonth()]} ${this.date.getDate()}`;
     }
+
+    // public method - public interface
+    click() {
+        this.clicks++;
+    } // adding only as an example of using the pucblic interface outside of its Class
 }
 
 // child Classes for Workout details
@@ -88,6 +94,7 @@ class App {
     // Private Fields - aka Private Instance Fields
     #map;
     #mapEvent;
+    #mapZoomLevel = 13;
     #workouts = [];
 
     constructor() {
@@ -99,6 +106,12 @@ class App {
 
         // when exercise type changed in form, swap input fields
         inputType.addEventListener('change', this._toggleElevationField); // 'change' event is on the 'select' html tag
+
+        // event delegation for an element that doesn't yet exist
+        containerWorkouts.addEventListener(
+            'click',
+            this._moveToPopup.bind(this)
+        );
     } // no params needed b/c nothing passed in; constructor executed as soon as Instance created
 
     // private methods
@@ -130,7 +143,7 @@ class App {
         const coords = [latitude, longitude];
 
         // from Leaflet, then edited. gives user location
-        this.#map = L.map('map').setView(coords, 13); // map string = id of element for rendering
+        this.#map = L.map('map').setView(coords, this.#mapZoomLevel); // map string = id of element for rendering
         // L = Leaflet namespace (like Intl) & global variable ♦
         // 13 = zoom value
         // console.log(map); checking for methods
@@ -311,6 +324,28 @@ class App {
             `;
 
         form.insertAdjacentHTML('afterend', html);
+    }
+
+    _moveToPopup(e) {
+        // event (e) used to match the element
+        const workoutEl = e.target.closest('.workout');
+        console.log(workoutEl); // this is where the data attribute comes in handy
+
+        // guard clause
+        if (!workoutEl) return;
+        const workout = this.#workouts.find(
+            work => work.id === workoutEl.dataset.id
+        );
+        console.log(workout); // take coords from the element & move map to it's position [see method from Leaflet below]
+
+        // from Leaflet
+        this.#map.setView(workout.coords, this.#mapZoomLevel, {
+            animate: true,
+            pan: { duration: 1 },
+        });
+
+        // using the public interface
+        workout.click(); // adding only as an example of using the pucblic interface outside of its Class; clicks property on each workout iinstance via inheritance
     }
 }
 
