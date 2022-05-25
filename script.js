@@ -115,9 +115,16 @@ class App {
             'click',
             this._moveToPopup.bind(this)
         );
+
+        // reset form on page reload - personally added
+        this._setFormSelect();
     } // no params needed b/c nothing passed in; constructor executed as soon as Instance created
 
     // private methods
+    _setFormSelect() {
+        inputType.value = 'running';
+    } // personally added
+
     _getPosition() {
         if (navigator.geolocation)
             // using the Geolocation API
@@ -388,5 +395,3 @@ class App {
 
 // create Instance
 const app = new App(); // created on pg load b/c it's in the top level scope. Constructor executed on Instance creation.
-
-// ♠ NOTE at the moment, if cycling is left as the inputType before pg refresh, the cadence/elevation input field is broken [will cause a problem when storing data] ♠
